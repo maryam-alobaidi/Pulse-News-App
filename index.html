@@ -237,7 +237,7 @@
     letter-spacing: 2px;
 }
 
-/* جسم الفورم */
+
 .modal-body {
     padding: 30px;
 }
@@ -269,7 +269,7 @@
     background-color: #f7f9fc;
 }
 
-/* زر Get Started */
+/*  Get Started */
 .submit-btn {
     width: 100%;
     padding: 15px;
@@ -290,7 +290,7 @@
     box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
-/* زر الإغلاق الذكي */
+
 .close-btn {
     position: absolute;
     top: 15px;
@@ -332,6 +332,164 @@
     color: #3498db; 
 }
 
+/* Search input */
+
+.search-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px auto;
+    max-width: 500px; 
+    background: #ffffff;
+    padding: 5px;
+    border-radius:0 50px 50px 0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); 
+    border: 1px solid #e1f5fe;
+    transition: all 0.3s ease;
+}
+
+.search-container:focus-within {
+    box-shadow: 0 8px 25px rgba(2, 136, 209, 0.15);
+    transform: translateY(-2px);
+    border-color: #0288d1;
+}
+
+#searchInput:focus {
+    outline: none;
+    border: none;
+    background:  #ffffff;
+}
+
+#searchInput {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 12px 20px;
+    font-size: 1rem;
+    background: transparent;
+    color: #333;
+  
+}
+
+#searchInput::placeholder {
+    color: #b0bec5;
+}
+
+
+.search-container button {
+    background: #0288d1;
+    color: white;
+    border: none;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%; 
+    cursor: pointer;
+    transition: 0.3s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.search-container button:hover {
+    background: #01579b;
+    transform: rotate(10deg);
+}
+
+.search-container button i {
+    font-size: 1.1rem;
+}
+
+/* Footer */
+
+footer {
+    background-color: #f8f9fa; 
+    padding: 20px;
+    text-align: center;
+    border-top: 1px solid #e1f5fe;
+    margin-top: 40px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.footer-content p {
+    color: #546e7a;
+    font-size: 0.9rem;
+    margin: 5px 0;
+}
+
+.designer {
+    font-weight: 500;
+}
+
+.designer span {
+    color: #0288d1; 
+    font-weight: bold;
+    text-transform: capitalize;
+  
+    transition: 0.3s;
+    cursor: default;
+}
+
+.designer span:hover {
+    color: #01579b;
+    text-decoration: underline;
+}
+
+/* Social links */
+
+
+.social-links-container {
+    display: flex;
+    justify-content: center;
+    gap: 15px; 
+    margin-top: 10px;
+}
+
+
+.social-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #ffffff;
+    text-decoration: none;
+    font-size: 1.2rem;
+    color: #555;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); 
+    transition: all 0.3s ease; 
+    border: 1px solid #eee;
+}
+
+
+.social-icon:hover {
+    transform: translateY(-5px); 
+    color: white;
+}
+
+.social-icon.github:hover {
+    background-color: #333; 
+    border-color: #333;
+}
+
+.social-icon.linkedin:hover {
+    background-color: #0077b5; 
+    border-color: #0077b5;
+}
+
+
+.social-icon.envelope:hover {
+    background-color: #ea4335; 
+    border-color: #ea4335;
+}
+
+.fa-envelope {
+    color: #555; 
+}
+
+.social-icon.envelope:hover .fa-envelope {
+    color: white;
+}
 </style>
 </head>
 <body>
@@ -364,6 +522,10 @@
     </nav>
       </div>
 
+      <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search for news...">
+        <button id="btnSearch" ><i class="fas fa-search"></i></button>
+      </div>
     </header>
 
     <div id="loader"></div>
@@ -407,8 +569,7 @@
 
 
 <script>
-   
-// For load the user porfile
+   // For load the user porfile
 
 window.addEventListener("DOMContentLoaded",()=>{
     const savedUser=localStorage.getItem("userAccount");
@@ -418,6 +579,79 @@ window.addEventListener("DOMContentLoaded",()=>{
          if(loginLink) loginLink.style.display = 'none';
     }
 })
+
+
+
+ // For input search
+   const searchInput=document.getElementById("searchInput");
+   const btnSearch=document.getElementById("btnSearch");
+   const load=document.getElementById("loader");
+
+   searchInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+        btnSearch.click();
+       searchInput.value = "";
+    }
+    });
+
+   btnSearch.addEventListener('click',()=>{
+    const query=searchInput.value.trim();
+
+    if(!query){
+        alert("Please enter a search term!");
+        return;
+    }else{
+        searchNews(query);
+        searchInput.value = "";
+    }
+   });
+
+   async function searchNews(query){
+     load.textContent="Loading...";
+     newsContainer.innerHTML = "";
+
+     try{
+
+        const apiURL = `https://content.guardianapis.com/search?q=${query}&api-key=784a185c-155b-4e1a-b42f-5d455f03c7cc&show-fields=thumbnail&page-size=50`;
+        const resp=await fetch(apiURL);
+        if(!resp.ok){
+            console.error("Server error: ",resp.status);
+        }
+        const data=await resp.json();
+        const result=data.response.results;
+        if(result.length>0){
+         renderResults(result);
+       
+       }else {
+            newsContainer.innerHTML = `<p style="text-align:center; grid-column: 1/-1;">No results found for "${query}"</p>`;
+        }
+
+    } catch (error) {
+
+    console.error("Error: ", error.message);
+
+    } finally {
+        load.textContent = ""; 
+    }
+   }
+
+     function renderResults(result){
+         result.forEach(r=>{
+            const image=r.fields? r.fields.thumbnail:'https://via.placeholder.com/300x200?text=No+Image';
+       const article= `
+        <div class="news-card">
+         <img src="${image}" alt="news image" style="width:100%; border-radius:8px; margin-bottom:10px;"> 
+         <h3>${r.webTitle}</h3>
+         <p>Section: ${r.sectionName}</p>
+         <p>Publication Date: ${r.webPublicationDate}</p>
+         <a href="${r.webUrl}" target="_blank" rel="noopener noreferrer" class="read-more">Read full article</a>
+     
+         </div>
+        `
+         newsContainer.innerHTML+=article;
+    })
+}
+
 
 // JS for the main page and date time
 
@@ -453,20 +687,8 @@ window.addEventListener("DOMContentLoaded",()=>{
 
        newsContainer.innerHTML=``;
         if(result){
-         result.forEach(r=>{
-            const image=r.fields? r.fields.thumbnail:'https://via.placeholder.com/300x200?text=No+Image';
-       const article= `
-        <div class="news-card">
-         <img src="${image}" alt="news image" style="width:100%; border-radius:8px; margin-bottom:10px;"> 
-         <h3>${r.webTitle}</h3>
-         <p>Section: ${r.sectionName}</p>
-         <p>Publication Date: ${r.webPublicationDate}</p>
-         <a href="${r.webUrl}" target="_blank" rel="noopener noreferrer" class="read-more">Read full article</a>
-     
-         </div>
-        `
-         newsContainer.innerHTML+=article;
-       })}else{
+         renderResults(result);
+       }else{
         console.error("Result not found");
        }
 
@@ -478,6 +700,8 @@ window.addEventListener("DOMContentLoaded",()=>{
        }
 
     }
+
+  
 
     // JS for modal registration
 
@@ -529,13 +753,23 @@ window.addEventListener("DOMContentLoaded",()=>{
    setInterval(updateDateTime,1000);
 </script>
 
-<footer style="background: #3e82c6; color: white; padding: 30px; text-align: center; margin-top: 50px; border-radius: 20px 20px 0 0;">
-<p>&copy; 2026 The Pulse News - Your daily source of truth</p>
-<div style="font-size: 1.2rem; gap: 15px; display: flex; justify-content: center; margin-top: 10px;">
-        <i class="fab fa-facebook"></i>
-        <i class="fab fa-twitter"></i>
-        <i class="fab fa-instagram"></i>
+<footer>
+<div class="footer-content">
+        <p>&copy; 2026 The Pulse News. All rights reserved.</p>
+        <p class="designer">Designed & Developed by <span>Maryam Al Obaidi</span></p>
+     <div class="social-links-container">
+    <a href="https://github.com/maryam-alobaidi" target="_blank" class="social-icon github">
+        <i class="fab fa-github"></i>
+    </a>
+    <a href="https://www.linkedin.com/in/maryam-al-obaidi-2620651b7/" target="_blank" class="social-icon linkedin">
+        <i class="fab fa-linkedin"></i>
+    </a>
+    <a href="mailto:maryamalobaidi107@gmail.com" class="social-icon envelope">
+    <i class="fas fa-envelope"></i>
+</a>
 </div>
+    </div>
+
 </footer>
 </body>
 </html>
